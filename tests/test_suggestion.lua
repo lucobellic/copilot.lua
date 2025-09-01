@@ -22,7 +22,7 @@ T["suggestion()"]["suggestion works"] = function()
   child.type_keys("i123", "<Esc>", "o456", "<Esc>", "o7")
   child.wait_for_suggestion()
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 T["suggestion()"]["auto_trigger is false, will not show ghost test"] = function()
@@ -32,17 +32,36 @@ T["suggestion()"]["auto_trigger is false, will not show ghost test"] = function(
   vim.loop.sleep(3000)
   child.lua("vim.wait(0)")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 T["suggestion()"]["accept keymap to trigger sugestion"] = function()
+  child.o.lines, child.o.columns = 10, 15
+  child.config.suggestion = child.config.suggestion .. "keymap = { accept = '<C-p>' },"
+  child.configure_copilot()
+  child.type_keys("i123", "<Esc>", "o456", "<Esc>", "o7", "<C-p>")
+  child.wait_for_suggestion()
+
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
+end
+
+T["suggestion()"]["accept keymap to trigger suggestion (TAB)"] = function()
   child.o.lines, child.o.columns = 10, 15
   child.config.suggestion = child.config.suggestion .. "keymap = { accept = '<Tab>' },"
   child.configure_copilot()
   child.type_keys("i123", "<Esc>", "o456", "<Esc>", "o7", "<Tab>")
   child.wait_for_suggestion()
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
+end
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+T["suggestion()"]["accept keymap to trigger suggestion - manual attach"] = function()
+  child.o.lines, child.o.columns = 10, 15
+  child.config.suggestion = child.config.suggestion .. "keymap = { accept = '<C-p>' },"
+  child.configure_copilot()
+  child.cmd("Copilot attach")
+  child.type_keys("i123", "<Esc>", "o456", "<Esc>", "o7", "<C-p>")
+  child.wait_for_suggestion()
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 T["suggestion()"]["accept keymap, no suggestion, execute normal keystroke"] = function()
@@ -53,29 +72,29 @@ T["suggestion()"]["accept keymap, no suggestion, execute normal keystroke"] = fu
   child.configure_copilot()
   child.type_keys("i123", "<Esc>", "o456", "<Esc>", "o7", "<Tab>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 T["suggestion()"]["accept_word, 1 word, works"] = function()
   child.o.lines, child.o.columns = 10, 15
   child.config.suggestion = child.config.suggestion .. "auto_trigger = true," .. "keymap = { accept_word = '<C-e>' },"
   child.configure_copilot()
-  child.type_keys("i1, 2, 3,", "<Esc>", "o4, 5, 6,", "<Esc>", "o7, ")
+  child.type_keys("i1 2 3", "<Esc>", "o4 5 6", "<Esc>", "o7 ")
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<Esc>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
-T["suggestion()"]["accept_word, 3 words, works"] = function()
+T["suggestion()"]["accept_word, 2 words, works"] = function()
   child.o.lines, child.o.columns = 10, 15
   child.config.suggestion = child.config.suggestion .. "auto_trigger = true," .. "keymap = { accept_word = '<C-e>' },"
   child.configure_copilot()
-  child.type_keys("i1, 2, 3,", "<Esc>", "o4, 5, 6,", "<Esc>", "o7, ")
+  child.type_keys("i1 2 3", "<Esc>", "o4 5 6", "<Esc>", "o7 ")
   child.wait_for_suggestion()
-  child.type_keys("<C-e>", "<C-e>", "<C-e>", "<Esc>")
+  child.type_keys("<C-e>", "<C-e>", "<Esc>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 -- - accept_word, 1 word then next
@@ -87,11 +106,11 @@ T["suggestion()"]["accept_word, 1 word, then dismiss"] = function()
     .. "auto_trigger = true,"
     .. "keymap = { accept_word = '<C-e>', dismiss = '<Tab>' },"
   child.configure_copilot()
-  child.type_keys("i1, 2, 3,", "<Esc>", "o4, 5, 6,", "<Esc>", "o7, ")
+  child.type_keys("i1 2 3", "<Esc>", "o4 5 6", "<Esc>", "o7 ")
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<Tab>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 T["suggestion()"]["accept_word, 1 word, then accept"] = function()
@@ -100,11 +119,11 @@ T["suggestion()"]["accept_word, 1 word, then accept"] = function()
     .. "auto_trigger = true,"
     .. "keymap = { accept_word = '<C-e>', accept = '<Tab>' },"
   child.configure_copilot()
-  child.type_keys("i1, 2, 3,", "<Esc>", "o4, 5, 6,", "<Esc>", "o7, ")
+  child.type_keys("i1 2 3", "<Esc>", "o4 5 6", "<Esc>", "o7 ")
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<Tab>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 9, 10 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 9, 10 }, ignore_attr = { 9, 10 } })
 end
 
 T["suggestion()"]["accept_line, 1 line, works"] = function()
@@ -117,7 +136,7 @@ T["suggestion()"]["accept_line, 1 line, works"] = function()
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<Esc>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 29, 30 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 29, 30 }, ignore_attr = { 29, 30 } })
 end
 
 T["suggestion()"]["accept_line, 3 lines, works"] = function()
@@ -130,7 +149,7 @@ T["suggestion()"]["accept_line, 3 lines, works"] = function()
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<C-e>", "<C-e>", "<Esc>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 49, 50 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 49, 50 }, ignore_attr = { 49, 50 } })
 end
 
 -- - accept_line, 1 line then next
@@ -148,7 +167,7 @@ T["suggestion()"]["accept_line, 1 line, then dismiss"] = function()
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<Tab>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 29, 30 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 29, 30 }, ignore_attr = { 29, 30 } })
 end
 
 T["suggestion()"]["accept_line, 1 line, then accept"] = function()
@@ -164,7 +183,21 @@ T["suggestion()"]["accept_line, 1 line, then accept"] = function()
   child.wait_for_suggestion()
   child.type_keys("<C-e>", "<Tab>")
 
-  reference_screenshot(child.get_screenshot(), nil, { ignore_lines = { 49, 50 } })
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 49, 50 }, ignore_attr = { 49, 50 } })
+end
+
+T["suggestion()"]["duplicated keymap yields correct error message"] = function()
+  child.config.suggestion = child.config.suggestion .. "auto_trigger = true," .. "keymap = { accept = '<M-CR>' },"
+  child.configure_copilot()
+  child.type_keys("i1 2 3", "<Esc>", "o4 5 6", "<Esc>", "o7 ")
+  child.wait_for_suggestion()
+  child.type_keys("<M-CR>", "<Tab>")
+  child.cmd_capture("Copilot disable")
+  local mess = child.cmd_capture("messages")
+  assert(mess:match("E31") == nil, "Error E31 should have been handled")
+  assert(mess:match("please review your configuration") ~= nil, "Should have logged a message about keymap conflict")
+
+  reference_screenshot(child.get_screenshot(), nil, { ignore_text = { 49, 50 }, ignore_attr = { 49, 50 } })
 end
 
 return T

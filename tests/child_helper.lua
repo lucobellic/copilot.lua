@@ -67,20 +67,32 @@ function M.new_child_neovim(test_name)
     child.lua("M = require('copilot')")
   end
 
+  function child.reset_suggested()
+    child.lua("M.suggested = false")
+  end
+
   function child.configure_copilot()
     local script = ""
     for k, v in pairs(child.config) do
       if v ~= "" and v ~= nil then
         if type(v) == "string" then
-          script = string.format(
-            [[%s%s = {
-          %s
-          },
-          ]],
-            script,
-            k,
-            v
-          )
+          if v:sub(1, 8) == "function" then
+            script = string.format(
+              [[%s
+%s = %s,]],
+              script,
+              k,
+              v
+            )
+          else
+            script = string.format(
+              [[%s
+%s = { %s },]],
+              script,
+              k,
+              v
+            )
+          end
         end
       end
     end
@@ -101,13 +113,13 @@ function M.new_child_neovim(test_name)
         return client.initialized
       end
 
-      vim.wait(30000, copilot_is_initialized, 10)
+      vim.wait(5000, copilot_is_initialized, 10)
     ]])
   end
 
   function child.wait_for_suggestion()
     child.lua([[
-      vim.wait(30000, function()
+      vim.wait(5000, function()
         return M.suggested
       end, 10)
     ]])
@@ -117,10 +129,10 @@ function M.new_child_neovim(test_name)
     child.lua([[
       local function suggestion_is_visible()
         lines = vim.api.nvim_buf_get_lines(2, 4, 5, false)
-        return lines[1] and lines[1] ~= "" 
+        return lines[1] and (lines[1] == "789" or lines[1] == "789\r")
       end
 
-      vim.wait(30000, function()
+      vim.wait(10000, function()
         return suggestion_is_visible()
       end, 50)
     ]])

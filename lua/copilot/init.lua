@@ -2,29 +2,28 @@ local M = { setup_done = false }
 local highlight = require("copilot.highlight")
 local logger = require("copilot.logger")
 local client = require("copilot.client")
-local auth = require("copilot.auth")
 local config = require("copilot.config")
 
 M.setup = function(opts)
+  if vim.fn.has("nvim-0.11") == 0 then
+    vim.notify_once(
+      "[copilot.lua] Neovim 0.11+ will soon be required. Please upgrade your Neovim version if you wish to keep using this plugin.",
+      vim.log.levels.WARN
+    )
+    return
+  end
+
   if M.setup_done then
     return
   end
 
   highlight.setup()
   config.merge_with_user_configs(opts)
-
-  require("copilot.command").enable()
   logger.setup(config.logger)
-
   logger.debug("active plugin config:", config)
+  require("copilot.command").enable()
   -- logged here to ensure the logger is setup
   logger.debug("active LSP config (may change runtime):", client.config)
-
-  local token_env_set = (os.getenv("GITHUB_COPILOT_TOKEN") ~= nil) or (os.getenv("GH_COPILOT_TOKEN") ~= nil)
-
-  if token_env_set then
-    vim.schedule(auth.signin)
-  end
 
   M.setup_done = true
 end

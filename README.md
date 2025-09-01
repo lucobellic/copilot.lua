@@ -117,7 +117,7 @@ require('copilot').setup({
       open = "<M-CR>"
     },
     layout = {
-      position = "bottom", -- | top | left | right | horizontal | vertical
+      position = "bottom", -- | top | left | right | bottom |
       ratio = 0.4
     },
   },
@@ -159,6 +159,7 @@ require('copilot').setup({
   copilot_node_command = 'node', -- Node.js version must be > 20
   workspace_folders = {},
   copilot_model = "",
+  disable_limit_reached_message = false,  -- Set to `true` to suppress completion limit reached popup
   root_dir = function()
     return vim.fs.dirname(vim.fs.find(".git", { upward = true })[1])
   end,
@@ -199,9 +200,12 @@ require("copilot.panel").accept()
 require("copilot.panel").jump_next()
 require("copilot.panel").jump_prev()
 require("copilot.panel").open({position, ratio})
+require("copilot.panel").close()
 require("copilot.panel").toggle()
 require("copilot.panel").refresh()
+require("copilot.panel").is_open()
 ```
+These can also be accessed through the `:Copilot panel <function>` command (eg. `:Copilot panel accept`).
 
 ### suggestion
 
@@ -264,6 +268,7 @@ require("copilot.suggestion").prev()
 require("copilot.suggestion").dismiss()
 require("copilot.suggestion").toggle_auto_trigger()
 ```
+These can also be accessed through the `:Copilot suggestion <function>` command (eg. `:Copilot suggestion accept`).
 
 ### filetypes
 

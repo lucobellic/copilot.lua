@@ -98,27 +98,8 @@ function M.status()
       return
     end
 
-    local should_attach, no_attach_reason = u.should_attach()
-    local is_attached = c.buf_is_attached()
-    if is_attached then
-      if not should_attach then
-        add_line("Enabled manually (" .. no_attach_reason .. ")")
-      elseif vim.bo.filetype and vim.bo.filetype ~= "" then
-        add_line("Enabled for " .. vim.bo.filetype)
-      else
-        add_line("Enabled")
-      end
-    elseif not is_attached then
-      if should_attach then
-        if vim.bo.filetype and vim.bo.filetype ~= "" then
-          add_line("Disabled manually for " .. vim.bo.filetype)
-        else
-          add_line("Disabled manually")
-        end
-      else
-        add_line("Disabled (" .. no_attach_reason .. ")")
-      end
-    end
+    local buffer_status = u.get_buffer_attach_status(vim.api.nvim_get_current_buf())
+    add_line("Buffer status: " .. buffer_status)
 
     if string.lower(M.data.status) == "error" then
       add_line(M.data.message)

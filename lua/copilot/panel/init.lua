@@ -44,8 +44,11 @@ local panel = {
     ratio = 0.4,
   },
 
+  ---@type boolean
   auto_refresh = false,
   keymap = {},
+  ---@type boolean
+  keymaps_set = false,
 }
 
 ---@param text string
@@ -243,7 +246,7 @@ function panel:close()
   end
 end
 
-local function set_keymap(bufnr)
+function M.set_keymap(bufnr)
   if panel.keymap.accept then
     vim.keymap.set("n", panel.keymap.accept, M.accept, {
       buffer = bufnr,
@@ -275,6 +278,8 @@ local function set_keymap(bufnr)
       silent = true,
     })
   end
+
+  M.keymaps_set = true
 end
 
 function panel:ensure_bufnr()
@@ -293,7 +298,7 @@ function panel:ensure_bufnr()
       vim.api.nvim_set_option_value(name, value, { buf = self.bufnr })
     end
 
-    set_keymap(self.bufnr)
+    M.set_keymap(self.bufnr)
   end
 
   vim.api.nvim_buf_set_name(self.bufnr, self.panel_uri)
@@ -320,8 +325,6 @@ function panel:ensure_winid()
     right = { cmd_prefix = "vertical botright ", winsize_fn = get_width },
     bottom = { cmd_prefix = "botright ", winsize_fn = get_height },
     left = { cmd_prefix = "vertical topleft ", winsize_fn = get_width },
-    horizontal = { cmd_prefix = "horizontal ", winsize_fn = get_height },
-    vertical = { cmd_prefix = "vertical ", winsize_fn = get_width },
   }
 
   local split_info = split_map[position]
@@ -526,6 +529,16 @@ function M.toggle()
   end
 end
 
+function M.close()
+  if panel.winid and vim.api.nvim_win_is_valid(panel.winid) then
+    panel:close()
+  end
+end
+
+function M.is_open()
+  return (panel.winid and vim.api.nvim_win_is_valid(panel.winid)) or false
+end
+
 function M.refresh()
   vim.api.nvim_buf_call(vim.uri_to_bufnr(utils.panel_uri_to_doc_uri(panel.panel_uri)), function()
     panel:refresh()
@@ -583,12 +596,16 @@ function M.teardown()
     return
   end
 
-  if panel.keymap.open then
-    vim.keymap.del("i", panel.keymap.open)
+  util.unset_keymap_if_exists("i", panel.keymap.open)
+
+  if M.keymaps_set then
+    M.unset_keymap_if_exists("n", panel.keymap.accept)
+    M.unset_keymap_if_exists("n", panel.keymap.jump_prev)
+    M.unset_keymap_if_exists("n", panel.keymap.jump_next)
+    M.unset_keymap_if_exists("n", panel.keymap.refresh)
   end
 
   panel:close()
-
   panel.setup_done = false
 end
 

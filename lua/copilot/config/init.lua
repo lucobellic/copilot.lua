@@ -12,7 +12,8 @@ local logger = require("copilot.logger")
 ---@field copilot_model string|nil Model to use for Copilot, LSP server dictates the default
 ---@field root_dir RootDirFuncOrString Root directory for the project, defaults to the nearest .git directory
 ---@field should_attach ShouldAttachFunc Function to determine if Copilot should attach to the buffer
----@field copilot_node_command string Path to the Node.js executable, defaults to "node"
+---@field copilot_node_command string|string[] Path to the Node.js executable, defaults to "node"
+---@field disable_limit_reached_message boolean Disable the limit reached message, defaults to false
 
 local initialized = false
 
@@ -30,6 +31,7 @@ local M = {
   server_opts_overrides = {},
   copilot_model = nil,
   copilot_node_command = "node",
+  disable_limit_reached_message = false,
 }
 
 ---@param user_configs CopilotConfig
@@ -66,7 +68,7 @@ function M.validate(config)
   vim.validate("copilot_model", config.copilot_model, { "string", "nil" })
   vim.validate("root_dir", config.root_dir, { "string", "function" })
   vim.validate("should_attach", config.should_attach, "function")
-  vim.validate("copilot_node_command", config.copilot_node_command, "string")
+  vim.validate("copilot_node_command", config.copilot_node_command, {"string", "table"})
 
   require("copilot.config.panel").validate(config.panel)
   require("copilot.config.suggestion").validate(config.suggestion)
